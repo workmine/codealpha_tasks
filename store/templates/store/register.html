@@ -1,0 +1,108 @@
+{% extends 'store/main.html' %}
+{% load static %}
+{% block content %}
+
+<style>
+    /* Center the Register box vertically */
+	.register-container {
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		min-height: 85vh; /* Ensure it takes up most of the screen */
+	}
+
+	.register-card {
+		width: 100%;
+		max-width: 450px; /* Slightly wider for register form */
+		background: #fff;
+		padding: 40px;
+		border-radius: 15px;
+		box-shadow: 0 10px 30px rgba(0,0,0,0.4); /* Stronger shadow for depth */
+	}
+
+    /* Style the form fields */
+    .register-card input {
+        border-radius: 20px;
+        padding: 10px 15px;
+        border: 1px solid #ced4da;
+        background-color: #f8f9fa;
+        margin-bottom: 15px;
+        width: 100%; /* Ensure inputs take full width */
+    }
+
+    .register-card input:focus {
+        border-color: #1b5e20;
+        box-shadow: 0 0 0 0.2rem rgba(27, 94, 32, 0.25);
+    }
+    
+    /* Hide the bullet points Django adds to help text */
+    .helptext {
+        font-size: 0.8rem;
+        color: #6c757d;
+        display: block;
+        margin-bottom: 10px;
+    }
+    ul {
+        list-style-type: none;
+        padding: 0;
+        margin: 0;
+    }
+
+	.btn-custom {
+		background-color: #1b5e20; /* Deep Green */
+		color: white;
+		border-radius: 25px;
+        padding: 10px;
+        font-weight: bold;
+        letter-spacing: 1px;
+        width: 100%;
+        margin-top: 10px;
+	}
+
+	.btn-custom:hover {
+		background-color: #2e7d32;
+		color: white;
+        transform: translateY(-2px); /* Slight lift effect */
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+	}
+
+    h3 {
+        color: #1b5e20 !important;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+</style>
+
+<div class="register-container">
+	<div class="register-card">
+        <div class="text-center mb-4">
+            <h3>Create Account</h3>
+            <p style="color: gray;">Join us to start shopping</p>
+        </div>
+        
+		<form method="POST" action="">
+			{% csrf_token %}
+            
+            {% for field in form %}
+                <div class="form-group">
+                    <label style="color: #333; font-weight: 600;">{{field.label}}</label>
+                    {{field}}
+                    {% if field.help_text %}
+                        <small class="helptext">{{field.help_text}}</small>
+                    {% endif %}
+                    {% for error in field.errors %}
+                        <p style="color: red; font-size: 0.8rem;">{{error}}</p>
+                    {% endfor %}
+                </div>
+            {% endfor %}
+
+			<input class="btn btn-custom" type="submit" value="Sign Up">
+            
+            <br><br>
+			<p class="text-center" style="color: #333;">Already have an account? <a href="{% url 'login' %}" style="color: #1b5e20; font-weight: bold; text-decoration: underline;">Login here</a></p>
+		</form>
+	</div>
+</div>
+
+{% endblock content %}

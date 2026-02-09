@@ -1,0 +1,68 @@
+{% extends 'store/main.html' %}
+{% load static %}
+{% block content %}
+
+<style>
+    .product-view-container {
+        background-color: #fff;
+        padding: 30px;
+        border-radius: 10px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        margin-top: 20px;
+    }
+
+    .btn-add {
+        background-color: #1b5e20;
+        color: white;
+        width: 100%;
+        padding: 10px;
+        font-weight: bold;
+        border-radius: 5px;
+        transition: 0.3s;
+    }
+
+    .btn-add:hover {
+        background-color: #2e7d32;
+        color: white;
+    }
+
+    .price-tag {
+        font-size: 24px;
+        color: #1b5e20;
+        font-weight: bold;
+    }
+</style>
+
+<div class="row">
+    <div class="col-lg-12">
+        <div class="box-element product-view-container">
+            <a class="btn btn-outline-dark" href="{% url 'store' %}">&#x2190; Back to Store</a>
+            <br><br>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <img style="width: 100%; border-radius: 10px; object-fit: cover;" src="{{product.imageURL}}">
+                </div>
+
+                <div class="col-md-6">
+                    <h2 style="color: #333;">{{product.name}}</h2>
+                    <hr>
+                    <p class="price-tag">${{product.price|floatformat:2}}</p>
+                    <p style="color: #666; line-height: 1.6;">
+                        <strong>Description:</strong><br>
+                        This is a high-quality {{product.name}}. It is perfect for your daily needs. 
+                        (You can add a specific 'description' field to your Database later if you want unique text for every item!)
+                    </p>
+                    
+                    <hr>
+                    
+                    <button data-product="{{product.id}}" data-action="add" class="btn btn-add update-cart">
+                        Add to Cart
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock content %}
