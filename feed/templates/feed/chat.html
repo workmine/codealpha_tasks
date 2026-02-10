@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Chat with {{ recipient.username }}</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body { background-color: #000; color: white; font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; height: 90vh; display: flex; flex-direction: column; }
+        
+        /* Header */
+        .chat-header { border-bottom: 1px solid #333; padding-bottom: 10px; margin-bottom: 10px; display:flex; align-items:center; gap:10px; }
+        a { color: #ff1493; text-decoration: none; }
+
+        /* Message Area */
+        .chat-box { flex-grow: 1; overflow-y: auto; padding: 10px; display: flex; flex-direction: column; gap: 15px; }
+        
+        /* Bubbles */
+        .message { max-width: 75%; padding: 10px 15px; border-radius: 15px; font-size: 0.95em; line-height: 1.4; position: relative; word-wrap: break-word; }
+        .sent { align-self: flex-end; background-color: #ff1493; color: white; border-bottom-right-radius: 2px; }
+        .received { align-self: flex-start; background-color: #222; color: #ddd; border-bottom-left-radius: 2px; border: 1px solid #333; }
+        
+        .timestamp { font-size: 0.7em; opacity: 0.7; margin-top: 5px; display: block; text-align: right; }
+
+        /* File Attachments */
+        .chat-image { max-width: 100%; border-radius: 10px; margin-bottom: 5px; cursor: pointer; }
+        .chat-video { max-width: 100%; border-radius: 10px; margin-bottom: 5px; }
+        .file-link { background: rgba(0,0,0,0.2); padding: 10px; border-radius: 5px; display: flex; align-items: center; gap: 10px; color: inherit; text-decoration: none; border: 1px solid rgba(255,255,255,0.2); }
+        .file-link:hover { background: rgba(0,0,0,0.4); }
+
+        /* Input Area */
+        .input-area { margin-top: 10px; display: flex; border-top: 1px solid #333; padding-top: 10px; align-items: center; gap: 10px; }
+        
+        .text-input { flex-grow: 1; background: #111; border: 1px solid #333; color: white; padding: 12px; border-radius: 25px; outline: none; }
+        .text-input:focus { border-color: #ff1493; }
+        
+        .send-btn { background: #ff1493; color: white; border: none; padding: 10px 20px; border-radius: 25px; cursor: pointer; font-weight: bold; }
+        
+        .file-label { cursor: pointer; color: #ff1493; font-size: 1.5em; padding: 5px; transition: transform 0.2s; }
+        .file-label:hover { transform: scale(1.1); }
+    </style>
+</head>
+<body>
+
+    <div class="chat-header">
+        <a href="{% url 'inbox' %}"><i class="fas fa-arrow-left"></i> Back</a>
+        
+        {% if recipient.profile.profile_pic %}
+            <img src="{{ recipient.profile.profile_pic.url }}" style="width:35px; height:35px; border-radius:50%; object-fit:cover; border:2px solid #ff1493;">
+        {% else %}
+            <i class="fas fa-user-circle" style="font-size:35px; color:#ff1493;"></i>
+        {% endif %}
+        
+        <h3 style="margin:0;">@{{ recipient.username }}</h3>
+    </div>
+
+    <div class="chat-box" id="chat-box">
+        {% for msg in messages %}
+            <div class="message {% if msg.sender == request.user %}sent{% else %}received{% endif %}">
+                
+                {% if msg.is_image %}
+                    <a href="{{ msg.file.url }}" target="_blank">
+                        <img src="{{ msg.file.url }}" class="chat-image">
+                    </a>
+                {% endif %}
+
+                {% if msg.is_video %}
+                    <video src="{{ msg.file.url }}" controls class="chat-video"></video>
+                {% endif %}
+
+                {% if msg.file and not msg.is_image and not msg.is_video %}
+                    <a href="{{ msg.file.url }}" target="_blank" class="file-link">
+                        <i class="fas fa-file-alt" style="font-size:1.5em;"></i>
+                        <span style="font-size:0.9em;">Download File</span>
+                    </a>
+                {% endif %}
+
+                {% if msg.body %}
+                    <div>{{ msg.body }}</div>
+                {% endif %}
+
+                <span class="timestamp">{{ msg.timestamp|date:"g:i A" }}</span>
+            </div>
+        {% empty %}
+            <p style="text-align:center; color:#555; margin-top:50px;">No messages yet. Send a photo or say hi!</p>
+        {% endfor %}
+    </div>
+
+    <form method="POST" enctype="multipart/form-data" class="input-area">
+        {% csrf_token %}
+        
+        <label class="file-label" title="Attach File">
+            <i class="fas fa-paperclip"></i>
+            <input type="file" name="file" style="display:none;" onchange="showFileName(this)">
+        </label>
+        
+        <input type="text" name="body" class="text-input" placeholder="Type a message..." autocomplete="off">
+        <button type="submit" class="send-btn"><i class="fas fa-paper-plane"></i></button>
+    </form>
+    
+    <div id="file-name-display" style="font-size:0.8em; color:#ff1493; margin-left: 50px; display:none;"></div>
+
+    <script>
+        // Scroll to bottom automatically
+        var chatBox = document.getElementById("chat-box");
+        chatBox.scrollTop = chatBox.scrollHeight;
+
+        // Show selected file name
+        function showFileName(input) {
+            var display = document.getElementById('file-name-display');
+            if (input.files && input.files.length > 0) {
+                display.innerText = "📎 Attached: " + input.files[0].name;
+                display.style.display = 'block';
+            } else {
+                display.style.display = 'none';
+            }
+        }
+    </script>
+
+</body>
+</html>

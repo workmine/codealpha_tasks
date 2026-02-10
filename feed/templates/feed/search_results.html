@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Search Results</title>
+    <style>
+        body { background-color: #050505; color: white; font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; }
+        .user-card { 
+            background: #111; padding: 15px; margin-bottom: 10px; border-radius: 10px; border: 1px solid #333; display: flex; align-items: center; 
+            transition: 0.2s;
+        }
+        .user-card:hover { border-color: #ff1493; transform: translateX(5px); }
+        .avatar { width: 50px; height: 50px; border-radius: 50%; object-fit: cover; border: 2px solid #ff1493; margin-right: 15px; }
+        a { text-decoration: none; color: white; flex-grow: 1; }
+        .btn { background: #ff1493; color: white; padding: 5px 15px; border-radius: 20px; text-decoration: none; font-size: 0.9em; }
+    </style>
+</head>
+<body>
+
+    <h2 style="color:#ff1493;">Search Results for "{{ query }}"</h2>
+    <a href="{% url 'home' %}" style="color:#888; margin-bottom:20px; display:block;">← Back to Home</a>
+
+    {% for user in results %}
+        <div class="user-card">
+            {% if user.profile.profile_pic %}
+                <img src="{{ user.profile.profile_pic.url }}" class="avatar">
+            {% else %}
+                <div class="avatar" style="background:#333; display:flex; align-items:center; justify-content:center;">?</div>
+            {% endif %}
+            
+            <a href="{% url 'profile' user.username %}">
+                <div style="font-weight:bold; font-size:1.1em;">@{{ user.username }}</div>
+                <div style="color:#666; font-size:0.9em;">{{ user.profile.bio|truncatechars:30 }}</div>
+            </a>
+            
+            <a href="{% url 'profile' user.username %}" class="btn">View</a>
+        </div>
+    {% empty %}
+        <p style="color:#666;">No users found.</p>
+    {% endfor %}
+
+</body>
+</html>

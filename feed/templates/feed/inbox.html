@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Inbox</title>
+    <style>
+        body { background-color: #000; color: white; font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { border-bottom: 1px solid #333; padding-bottom: 10px; margin-bottom: 20px; }
+        .user-card { 
+            background: #111; padding: 15px; margin-bottom: 10px; border-radius: 10px; border: 1px solid #333; display: flex; align-items: center; text-decoration: none; color: white; transition: 0.2s;
+        }
+        .user-card:hover { border-color: #ff1493; transform: translateX(5px); }
+        .avatar { width: 50px; height: 50px; border-radius: 50%; object-fit: cover; border: 2px solid #ff1493; margin-right: 15px; }
+        a { color: #ff1493; text-decoration: none; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <a href="{% url 'home' %}">← Back to Home</a>
+        <h2 style="color:#ff1493;">My Messages</h2>
+    </div>
+
+    {% for user in conversations %}
+        <a href="{% url 'direct_message' user.username %}" class="user-card">
+            {% if user.profile.profile_pic %}
+                <img src="{{ user.profile.profile_pic.url }}" class="avatar">
+            {% else %}
+                <div class="avatar" style="background:#333; display:flex; align-items:center; justify-content:center;">?</div>
+            {% endif %}
+            <span style="font-size:1.2em; font-weight:bold;">@{{ user.username }}</span>
+        </a>
+    {% empty %}
+        <p style="color:#666;">No messages yet. Go to a profile to start a chat!</p>
+    {% endfor %}
+
+</body>
+</html>
