@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>@{{ profile_user.username }} | Profile</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        /* --- GLOBAL STYLES --- */
+        body { 
+            background-color: #050505; 
+            color: white; 
+            font-family: 'Segoe UI', sans-serif; 
+            max-width: 600px; 
+            margin: 0 auto; 
+            padding: 20px; 
+        }
+
+        a { text-decoration: none; color: #ff1493; }
+        
+        /* Back Button */
+        .back-link { 
+            display: inline-block; 
+            margin-bottom: 20px; 
+            font-weight: bold; 
+            color: #888; 
+            transition: 0.2s;
+        }
+        .back-link:hover { color: white; transform: translateX(-5px); }
+
+        /* --- PROFILE HEADER --- */
+        .profile-header { 
+            background: #111; 
+            padding: 30px; 
+            border-radius: 15px; 
+            border: 1px solid #333; 
+            text-align: center; 
+            margin-bottom: 20px; 
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        /* Profile Picture */
+        .pic { 
+            width: 120px; 
+            height: 120px; 
+            border-radius: 50%; 
+            object-fit: cover; 
+            border: 3px solid #ff1493; 
+            margin-bottom: 15px; 
+            padding: 3px;
+        }
+        
+        .username { margin: 0; font-size: 1.8em; color: white; }
+        .bio { color: #ccc; margin-top: 5px; font-size: 0.95em; }
+
+        /* Stats (Followers/Following) */
+        .stats { 
+            display: flex; 
+            justify-content: center; 
+            gap: 30px; 
+            margin: 20px 0; 
+            color: #aaa; 
+            border-top: 1px solid #222; 
+            border-bottom: 1px solid #222; 
+            padding: 15px 0;
+        }
+        .stat-num { display: block; color: #ff1493; font-weight: bold; font-size: 1.4em; }
+
+        /* Buttons */
+        .btn-group { display: flex; justify-content: center; gap: 10px; margin-top: 15px; }
+        
+        .btn { 
+            padding: 10px 25px; 
+            border-radius: 25px; 
+            border: none; 
+            font-weight: bold; 
+            cursor: pointer; 
+            transition: 0.3s;
+            font-size: 1em;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .follow-btn { background: #ff1493; color: white; box-shadow: 0 0 10px rgba(255, 20, 147, 0.4); }
+        .follow-btn:hover { background: #d60076; transform: scale(1.05); }
+
+        .unfollow-btn { background: #222; color: white; border: 1px solid #555; }
+        .unfollow-btn:hover { background: #333; }
+
+        .message-btn { background: #222; color: white; border: 1px solid #ff1493; }
+        .message-btn:hover { background: #ff1493; border-color: #ff1493; }
+
+        .edit-btn { background: #333; color: white; border: 1px solid #555; width: 100%; justify-content: center; }
+
+        /* --- POSTS GRID --- */
+        .post-card { 
+            background: #111; 
+            padding: 15px; 
+            margin-bottom: 15px; 
+            border-radius: 10px; 
+            border: 1px solid #222; 
+            animation: fadeIn 0.8s ease-in;
+        }
+        .post-date { font-size: 0.8em; color: #666; margin-top: 5px; display: block; }
+        
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body>
+
+    <a href="{% url 'home' %}" class="back-link">
+        <i class="fas fa-arrow-left"></i> Back to Feed
+    </a>
+
+    <div class="profile-header">
+        
+        {% if profile.profile_pic %}
+            <img src="{{ profile.profile_pic.url }}" class="pic">
+        {% else %}
+            <div class="pic" style="background:#222; display:flex; align-items:center; justify-content:center; margin:0 auto 15px auto; font-size:2em; color:#ff1493;">
+                <i class="fas fa-user"></i>
+            </div>
+        {% endif %}
+        
+        <h2 class="username">@{{ profile_user.username }}</h2>
+        <p class="bio">{{ profile.bio }}</p>
+
+        <div class="stats">
+            <div>
+                <span id="follower-count" class="stat-num">{{ followers_count }}</span> 
+                Followers
+            </div>
+            <div>
+                <span class="stat-num">{{ following_count }}</span> 
+                Following
+            </div>
+        </div>
+
+        <div class="btn-group">
+            {% if request.user == profile_user %}
+                <a href="{% url 'edit_profile' %}" style="width:100%;">
+                    <button class="btn edit-btn"><i class="fas fa-cog"></i> Edit Profile</button>
+                </a>
+            {% else %}
+                <button id="follow-btn" 
+                        class="btn {% if is_following %}unfollow-btn{% else %}follow-btn{% endif %}" 
+                        onclick="toggleFollow('{{ profile_user.username }}')">
+                    {% if is_following %}
+                        <i class="fas fa-user-minus"></i> Unfollow
+                    {% else %}
+                        <i class="fas fa-user-plus"></i> Follow
+                    {% endif %}
+                </button>
+
+                <a href="{% url 'direct_message' profile_user.username %}">
+                    <button class="btn message-btn"><i class="fas fa-envelope"></i> Message</button>
+                </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <h3 style="color:#ff1493; border-bottom:1px solid #333; padding-bottom:10px;">Recent Posts</h3>
+    
+    {% for post in posts %}
+        <div class="post-card">
+            
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                <span class="post-date">{{ post.created_at|date:"M d, Y" }}</span>
+                
+                {% if request.user == post.user %}
+                    <a href="{% url 'delete_post' post.id %}" onclick="return confirm('Are you sure you want to delete this post?');" title="Delete Post" style="color:#444;">
+                        <i class="fas fa-trash-alt"></i>
+                    </a>
+                {% endif %}
+            </div>
+
+            <p style="font-size: 1.1em; line-height: 1.5; margin-bottom: 10px;">{{ post.content }}</p>
+            
+            {% if post.image %}
+                <img src="{{ post.image.url }}" style="max-width:100%; border-radius:8px; border:1px solid #333;">
+            {% endif %}
+            
+            {% if post.video %}
+                <video src="{{ post.video.url }}" controls style="max-width:100%; border-radius:8px; margin-top:10px;"></video>
+            {% endif %}
+
+            <div style="margin-top: 10px; display:flex; justify-content:space-between; align-items:center;">
+                <span style="color:#ff1493;">❤️ {{ post.total_likes }}</span>
+            </div>
+        </div>
+    {% empty %}
+        <div style="text-align:center; padding:40px; color:#555;">
+            <i class="fas fa-camera" style="font-size:2em; margin-bottom:10px; display:block;"></i>
+            No posts yet.
+        </div>
+    {% endfor %}
+
+    <script>
+        function toggleFollow(username) {
+            const btn = document.getElementById('follow-btn');
+            const countSpan = document.getElementById('follower-count');
+
+            fetch(`/api/follow/${username}/`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.following) {
+                    // Switch to Unfollow state
+                    btn.innerHTML = '<i class="fas fa-user-minus"></i> Unfollow';
+                    btn.classList.remove('follow-btn');
+                    btn.classList.add('unfollow-btn');
+                } else {
+                    // Switch to Follow state
+                    btn.innerHTML = '<i class="fas fa-user-plus"></i> Follow';
+                    btn.classList.remove('unfollow-btn');
+                    btn.classList.add('follow-btn');
+                }
+                // Update follower count instantly
+                countSpan.innerText = data.count;
+            })
+            .catch(error => console.error('Error:', error));
+        }
+    </script>
+
+</body>
+</html>
